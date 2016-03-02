@@ -1,0 +1,6 @@
+MIT-LICENSE
+*.swift
+README.md
+app.json
+.*
+!.build/release/Swifton-TodoApp
