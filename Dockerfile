@@ -6,4 +6,6 @@ RUN mkdir -p ${APP_DIR}
 WORKDIR ${APP_DIR}
 ADD . ${APP_DIR}
 
+RUN mv swift/usr/lib/swift /usr/lib
+
 CMD .build/release/Swifton-TodoApp
