@@ -4,8 +4,8 @@
     {
       "image": "<%= ENV['DOCKER_REPO'] %>:b<%= ENV['CIRCLE_BUILD_NUM'] %>",
       "name": "<%= ENV['CONTAINER_NAME'] %>",
-      "cpu": 2,
-      "memory": 3072,
+      "cpu": 1,
+      "memory": 256,
       "essential": true,
       "portMappings": [{ "hostPort": 80, "containerPort": <%= ENV['CONTAINER_PORT'] %>, "protocol": "tcp" }],
       "mountPoints": [],
