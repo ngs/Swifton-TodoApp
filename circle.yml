@@ -12,6 +12,7 @@ general:
 dependencies:
   cache_directories:
     - swift
+    - serverspec/vendor/bundler
   override:
     - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
     - sudo apt-get install libicu-dev clang-3.6
@@ -24,12 +25,14 @@ dependencies:
     - swift --version
     - docker pull ubuntu:14.04
     - docker pull "${DOCKER_REPO}:latest"; exit 0
+    - cd serverspec && (bundle check --path vendor/bundler || bundle install --path vendor/bundler)
 test:
   pre:
     - swift build --configuration release
     - docker build -t $DOCKER_REPO .
+    - docker run -d --name serverspec -p 8000:8000 atsnngs/docker-swifton-example
   override:
-    - echo 'no tests'
+    - cd serverspec && export DOCKER_CONTAINER=serverspec && bundle exec rspec
   post:
     - docker tag $DOCKER_REPO "${DOCKER_REPO}:b${CIRCLE_BUILD_NUM}"
     - docker push "${DOCKER_REPO}:b${CIRCLE_BUILD_NUM}"

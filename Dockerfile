@@ -1,7 +1,7 @@
 FROM ubuntu:14.04
 MAINTAINER a@ngs.io
 
-RUN apt-get update && apt-get install -y libicu52 libxml2 && \
+RUN apt-get update && apt-get install -y libicu52 libxml2 curl && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
