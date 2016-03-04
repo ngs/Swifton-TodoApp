@@ -1,0 +1,45 @@
+machine:
+  timezone: UTC
+  services:
+    - docker
+  environment:
+    SWIFT_BRANCH: development
+    SWIFT_TARBALL: 'https://swift.org/builds/development/ubuntu1404/swift-DEVELOPMENT-SNAPSHOT-2016-03-01-a/swift-DEVELOPMENT-SNAPSHOT-2016-03-01-a-ubuntu14.04.tar.gz'
+    DOCKER_REPO: 'atsnngs/docker-swifton-example'
+general:
+  artifacts:
+    - .build
+dependencies:
+  cache_directories:
+    - swift
+    - serverspec/vendor/bundler
+  override:
+    - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+    - sudo apt-get install libicu-dev clang-3.6 jq
+    # https://goo.gl/hSfhjE
+    - sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-3.6 100
+    - sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-3.6 100
+    - mkdir -p swift
+    - 'cd swift && [ -f usr/bin/swift ] || (curl $SWIFT_TARBALL -o swift.tar.gz && tar xvfz swift.tar.gz --strip-components=1)'
+    - echo "export PATH=$(pwd)/swift/usr/bin:\$PATH" >> ~/.bashrc
+    - swift --version
+    - docker pull ubuntu:14.04
+    - docker pull "${DOCKER_REPO}:latest"; exit 0
+    - cd serverspec && (bundle check --path vendor/bundler || bundle install --path vendor/bundler)
+test:
+  pre:
+    - swift build --configuration release
+    - docker build -t $DOCKER_REPO .
+    - docker run -d --name serverspec -p 8000:8000 atsnngs/docker-swifton-example
+  override:
+    - cd serverspec && export DOCKER_CONTAINER=serverspec && bundle exec rspec
+  post:
+    - docker tag $DOCKER_REPO "${DOCKER_REPO}:b${CIRCLE_BUILD_NUM}"
+    - docker push "${DOCKER_REPO}:b${CIRCLE_BUILD_NUM}"
+
+deployment:
+  master:
+    branch: ['master', 'lightweight']
+    commands:
+      - docker push $DOCKER_REPO
+      - ENV_NAME=production CONTAINER_NAME=swifton-example /bin/bash script/ecs-deploy-services.sh

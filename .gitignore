@@ -1,2 +1,5 @@
 .build/
 Packages/
+/swift
+/serverspec/vendor/bundler
+.bundle

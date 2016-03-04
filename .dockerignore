@@ -1,0 +1,9 @@
+MIT-LICENSE
+*.swift
+README.md
+app.json
+.*
+swift
+!swift/usr/lib/swift/linux/*.so
+!.build/release/Swifton-TodoApp
+serverspec
